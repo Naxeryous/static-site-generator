@@ -7,23 +7,21 @@ def split_nodes_delimiter(nodes, delimeter, text_type):
         if node.text_type != TextType.PLAIN_TEXT:
             new_nodes.append(node)
             continue
-
-        if delimeter not in node.text:
-            raise Exception(f"The text do not contain {delimeter} delimeter")
         
         texts = node.text.split(delimeter)
+        if len(texts) % 2 == 0:
+            raise Exception("there is not a valid delimeter")
         
         result = []
         for i in range(len(texts)):
-            if texts[i] == "":
-                continue
-            if i % 2 == 0:
-                result.append(TextNode(texts[i], TextType.PLAIN_TEXT))
-            else:
-                result.append(TextNode(texts[i], text_type))
+            if texts[i] != "":
+                if i % 2 == 1:
+                    result.append(TextNode(texts[i], text_type)) 
+                else:
+                    result.append(TextNode(texts[i], TextType.PLAIN_TEXT))
         
         new_nodes.extend(result)
-        return new_nodes
+    return new_nodes
     
 def extract_markdown_images(text):
     matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
@@ -81,3 +79,12 @@ def split_nodes_link(old_nodes):
         if original_text != "":
             new_nodes.append(TextNode(original_text, TextType.PLAIN_TEXT))
     return new_nodes
+
+def text_to_textnodes(text):
+    nodes = [TextNode(text, TextType.PLAIN_TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD_TEXT)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC_TEXT)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE_TEXT)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes

@@ -1,7 +1,9 @@
 import unittest
 
 from textnode import TextNode, TextType
-from split_nodes import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from split_nodes import (split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link,
+                        text_to_textnodes                        
+                        )
 
 class TestSplitNodeDelimeter(unittest.TestCase):
     def test(self):
@@ -171,5 +173,39 @@ class TestExtractMarkdown(unittest.TestCase):
             ],
             new_nodes,
         )
+
+    def test_delim_bold_and_italic(self):
+        node = TextNode("**bold** and _italic_", TextType.PLAIN_TEXT)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD_TEXT)
+        new_nodes = split_nodes_delimiter(new_nodes, "_", TextType.ITALIC_TEXT)
+        self.assertEqual(
+            [
+                TextNode("bold", TextType.BOLD_TEXT),
+                TextNode(" and ", TextType.PLAIN_TEXT),
+                TextNode("italic", TextType.ITALIC_TEXT),
+            ],
+            new_nodes,
+        )
+
+    def test_text_to_textnodes(self):
+        nodes = text_to_textnodes(
+            "This is **text** with an _italic_ word and a `code block` and an ![image](https://i.imgur.com/zjjcJKZ.png) and a [link](https://boot.dev)"
+        )
+        self.assertListEqual(
+            [
+                TextNode("This is ", TextType.PLAIN_TEXT),
+                TextNode("text", TextType.BOLD_TEXT),
+                TextNode(" with an ", TextType.PLAIN_TEXT),
+                TextNode("italic", TextType.ITALIC_TEXT),
+                TextNode(" word and a ", TextType.PLAIN_TEXT),
+                TextNode("code block", TextType.CODE_TEXT),
+                TextNode(" and an ", TextType.PLAIN_TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and a ", TextType.PLAIN_TEXT),
+                TextNode("link", TextType.LINK, "https://boot.dev"),
+            ],
+            nodes,
+        )
+
 if __name__ == "__main__":
     unittest.main()
