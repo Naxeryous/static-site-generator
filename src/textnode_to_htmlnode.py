@@ -1,6 +1,5 @@
-from enum import Enum
-from textnode import TextType, TextNode
-from htmlnode import HTMLNode, LeafNode, ParentNode
+from textnode import TextType
+from htmlnode import LeafNode
 
 def text_node_to_html_node(text_node):
     if text_node.text_type == TextType.PLAIN_TEXT:
